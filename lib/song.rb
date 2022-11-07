@@ -49,4 +49,39 @@ class Song
     song.save
   end
 
+  #this method reads data from the db and represents it in Ruby
+  def self.new_from_db(row)
+    #self.new is equivalent to Song.new
+    #SQlite returns the row data as an array [id, name, albume] for this example.
+    #self.new arguments need to target the index of the SQlite response
+    self.new(id: row[0], name: row[1], album: row[2])
+  end
+
+  def self.all
+    #line 62 sets a variable equal to SQL commands as heredoc (<<-start/and name)
+    sql = <<-SQL
+      SELECT *
+      FROM songs
+    SQL
+
+    #makes a call to the DB constant in environment.rb
+    #iterate over the array of rows to create Ruby Hashes (objects) for each song
+    DB[:conn].execute(sql).map do |row|
+      self.new_from_db(row)
+    end
+  end
+
+  def self.find_by_name(name)
+    sql = <<-SQL
+      SELECT *
+      FROM songs
+      WHERE name = ?
+      LIMIT 1
+    SQL
+
+    DB[:conn].execute(sql, name).map do |row|
+      self.new_from_db(row)
+    end.first
+  end
+
 end
